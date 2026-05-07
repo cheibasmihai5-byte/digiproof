@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback DigiProf</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f6ff;
+      --ink: #15213d;
+      --muted: #5b6b92;
+      --line: #d2deff;
+      --surface: #ffffff;
+      --primary: #2243c7;
+      --primary-deep: #172b87;
+      --accent: #0f9d88;
+      --accent-deep: #0a7b6b;
+      --danger: #b42318;
+      --ok: #117144;
+      --shadow-soft: 0 14px 40px rgba(34, 67, 199, 0.12);
+      --shadow-hover: 0 22px 50px rgba(34, 67, 199, 0.2);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, #d8e6ff 0, transparent 36%),
+        radial-gradient(circle at 82% 18%, #d7fff3 0, transparent 30%),
+        linear-gradient(165deg, #f7fbff 0%, #ebf3ff 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      border-radius: 999px;
+      filter: blur(42px);
+      z-index: -2;
+      pointer-events: none;
+      animation: floatBlob 18s ease-in-out infinite alternate;
+    }
+
+    body::before {
+      top: -160px;
+      right: -120px;
+      background: rgba(34, 67, 199, 0.18);
+    }
+
+    body::after {
+      bottom: -180px;
+      left: -140px;
+      background: rgba(15, 157, 136, 0.16);
+      animation-delay: 1.6s;
+    }
+
+    .cursor-glow {
+      position: fixed;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(34, 67, 199, 0.16), rgba(34, 67, 199, 0) 70%);
+      transition: opacity 0.2s ease;
+      opacity: 0;
+    }
+
+    .cursor-glow.visible {
+      opacity: 1;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px clamp(16px, 3vw, 40px);
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(210, 222, 255, 0.9);
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: 0;
+      color: var(--primary-deep);
+    }
+
+    .admin-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      color: var(--primary);
+      background: white;
+      border: 1px solid var(--line);
+      box-shadow: 0 6px 16px rgba(34, 67, 199, 0.12);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .admin-link:hover {
+      transform: translateY(-2px);
+      border-color: #9ab3ff;
+      box-shadow: 0 12px 24px rgba(34, 67, 199, 0.18);
+    }
+
+    header {
+      position: relative;
+      max-width: 1080px;
+      margin: 26px auto 0;
+      padding: 38px clamp(20px, 4vw, 48px) 24px;
+      overflow: hidden;
+    }
+
+    .hero-panel {
+      border-radius: 24px;
+      padding: 34px clamp(22px, 4vw, 46px);
+      color: white;
+      background:
+        linear-gradient(125deg, #1b2d89 0%, #264ecf 46%, #109b87 100%);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      isolation: isolate;
+      animation: heroLift 0.8s ease both;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(35deg, transparent 25%, rgba(255, 255, 255, 0.18) 46%, transparent 67%);
+      transform: translateX(-55%);
+      animation: shine 4.5s linear infinite;
+      z-index: -1;
+    }
+
+    .hero-panel h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 44px);
+      letter-spacing: 0;
+      max-width: 680px;
+    }
+
+    .hero-panel p {
+      margin: 14px 0 0;
+      max-width: 700px;
+      font-size: clamp(16px, 2vw, 20px);
+      line-height: 1.5;
+      color: rgba(243, 250, 255, 0.93);
+    }
+
+    .container {
+      width: min(92%, 950px);
+      margin: 24px auto 36px;
+    }
+
+    .card {
+      border: 1px solid #dfebff;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(7px);
+      padding: clamp(20px, 4vw, 34px);
+      transform-style: preserve-3d;
+      transition: transform 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      color: var(--primary-deep);
+      font-size: clamp(23px, 3.5vw, 30px);
+      letter-spacing: 0;
+    }
+
+    .form-group,
+    fieldset {
+      margin: 0 0 22px;
+    }
+
+    fieldset {
+      border: 0;
+      padding: 0;
+    }
+
+    label,
+    legend {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #1b2a4e;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      background: #fbfdff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      border-color: #9db5ff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 0;
+      border-color: #4e72f4;
+      box-shadow: 0 0 0 4px rgba(78, 114, 244, 0.16);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .choice-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .choice-list label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    }
+
+    .choice-list label:hover {
+      border-color: #98b1ff;
+      background: #f5f8ff;
+      transform: translateX(2px);
+    }
+
+    .choice-list input {
+      margin-top: 2px;
+      accent-color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      min-height: 48px;
+      padding: 12px 22px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+      box-shadow: 0 10px 20px rgba(15, 157, 136, 0.25);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(15, 157, 136, 0.31);
+      filter: saturate(1.1);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.72;
+      transform: none;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 999px;
+      transform: scale(0);
+      animation: ripple 0.64s ease-out forwards;
+      background: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 0;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .status.success {
+      color: var(--ok);
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 0 20px 26px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes floatBlob {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        transform: translateY(38px) scale(1.07);
+      }
+    }
+
+    @keyframes heroLift {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-55%);
+      }
+      100% {
+        transform: translateX(145%);
+      }
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .admin-link {
+        width: 100%;
+      }
+
+      .actions {
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" id="cursor-glow"></div>
+
+  <nav class="topbar reveal">
+    <div class="brand">DigiProf 2026</div>
+    <a class="admin-link" href="/admin.html">Panou admin</a>
+  </nav>
+
+  <header class="reveal">
+    <div class="hero-panel">
+      <h1>Feedback deschis pentru cursul DigiProf</h1>
+      <p>Ajuta-ne sa imbunatatim experienta de invatare. Completeaza formularul in mai putin de 2 minute.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card reveal tilt-card" aria-labelledby="form-title">
+      <h2 id="form-title">Formular de feedback</h2>
+
+      <form id="feedback-form">
+        <div class="form-group">
+          <label for="name">Nume si prenume</label>
+          <input id="name" name="nume" type="text" placeholder="Introduceti numele" required>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username participant</label>
+          <input id="username" name="username" type="text" placeholder="Introduceti username-ul, daca exista">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="Introduceti adresa de email" required>
+        </div>
+
+        <fieldset>
+          <legend>Cum apreciati cursul DigiProf?</legend>
+          <div class="choice-list">
+            <label><input type="radio" name="evaluare" value="Foarte bun" required> Foarte bun</label>
+            <label><input type="radio" name="evaluare" value="Bun"> Bun</label>
+            <label><input type="radio" name="evaluare" value="Satisfacator"> Satisfacator</label>
+            <label><input type="radio" name="evaluare" value="Necesita imbunatatiri"> Necesita imbunatatiri</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Ce competente ati dezvoltat?</legend>
+          <div class="choice-list">
+            <label><input type="checkbox" name="competente" value="Utilizarea instrumentelor digitale"> Utilizarea instrumentelor digitale</label>
+            <label><input type="checkbox" name="competente" value="Crearea resurselor interactive"> Crearea resurselor interactive</label>
+            <label><input type="checkbox" name="competente" value="Evaluare digitala"> Evaluare digitala</label>
+            <label><input type="checkbox" name="competente" value="Colaborare online"> Colaborare online</label>
+            <label><input type="checkbox" name="competente" value="Siguranta digitala"> Siguranta digitala</label>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <label for="activity">Care activitate v-a fost cea mai utila?</label>
+          <select id="activity" name="activitate_utila" required>
+            <option value="">Alegeti o activitate</option>
+            <option>Prezentari interactive</option>
+            <option>Activitati practice</option>
+            <option>Evaluari online</option>
+            <option>Lucru colaborativ</option>
+            <option>Crearea resurselor digitale</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="experience">Descrieti experienta dumneavoastra in cadrul cursului</label>
+          <textarea id="experience" name="experienta" placeholder="Scrieti reflectia sau sugestiile dumneavoastra..." required></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="submit-button" type="submit">Trimite feedback</button>
+          <p id="form-status" class="status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    &copy; 2026 | Formular Feedback DigiProf
+  </footer>
+
+  <script>
+    const feedbackForm = document.querySelector("#feedback-form");
+    const submitButton = document.querySelector("#submit-button");
+    const formStatus = document.querySelector("#form-status");
+    const cursorGlow = document.querySelector("#cursor-glow");
+
+    function setStatus(message, type) {
+      formStatus.textContent = message;
+      formStatus.className = `status ${type || ""}`.trim();
+    }
+
+    function attachButtonRipple(button) {
+      button.addEventListener("click", (event) => {
+        const ripple = document.createElement("span");
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.className = "ripple";
+        ripple.style.width = `${size}px`;
+        ripple.style.height = `${size}px`;
+        ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+        ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+        button.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+      });
+    }
+
+    function initReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    }
+
+    function initTiltCards() {
+      document.querySelectorAll(".tilt-card").forEach((card) => {
+        card.addEventListener("mousemove", (event) => {
+          const rect = card.getBoundingClientRect();
+          const px = (event.clientX - rect.left) / rect.width;
+          const py = (event.clientY - rect.top) / rect.height;
+          const rx = (0.5 - py) * 6;
+          const ry = (px - 0.5) * 8;
+          card.style.transform = `perspective(1100px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        });
+
+        card.addEventListener("mouseleave", () => {
+          card.style.transform = "perspective(1100px) rotateX(0) rotateY(0)";
+        });
+      });
+    }
+
+    document.addEventListener("mousemove", (event) => {
+      cursorGlow.classList.add("visible");
+      cursorGlow.style.left = `${event.clientX}px`;
+      cursorGlow.style.top = `${event.clientY}px`;
+    });
+
+    document.addEventListener("mouseleave", () => {
+      cursorGlow.classList.remove("visible");
+    });
+
+    feedbackForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(feedbackForm);
+      const payload = {
+        nume: formData.get("nume"),
+        username: formData.get("username"),
+        email: formData.get("email"),
+        evaluare: formData.get("evaluare"),
+        competente: formData.getAll("competente"),
+        activitate_utila: formData.get("activitate_utila"),
+        experienta: formData.get("experienta")
+      };
+
+      submitButton.disabled = true;
+      setStatus("Se trimite...", "");
+
+      try {
+        const response = await fetch("/api/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(result.error || "Nu s-a putut trimite formularul.");
+        }
+
+        feedbackForm.reset();
+        setStatus("Multumim! Feedbackul a fost trimis.", "success");
+      } catch (error) {
+        setStatus(error.message, "error");
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    attachButtonRipple(submitButton);
+    initReveal();
+    initTiltCards();
+  </script>
+</body>
+</html>
