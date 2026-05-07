@@ -1,1 +1,0 @@
-{"id":"4ca2e707-e2e1-406b-94ce-51042a3c09a5","timestamp":"2026-05-07T11:35:56.011Z","data":"7 mai 2026, 14:35","nume":"tudor","username":"asd","email":"cheibasmihai5@gmail.com","evaluare":"Foarte bun","competente":["Utilizarea instrumentelor digitale"],"activitate_utila":"Activitati practice","experienta":"asdadad"}
